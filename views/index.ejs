@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Rank libros</title>
+  <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="/stylesheets/style.css" rel='stylesheet'>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.2/angular-ui-router.js"></script>
+<script src="/javascripts/angularApp.js"></script>
+  <style> .glyphicon-thumbs-up { cursor:pointer } </style>
+</head>
+<body ng-app="books">
+
+
+<div class="modal fade" id="modalsave" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" ng-controller="MainCtrl">
+    
+            <div class="modal-header">
+               <h2 class="text-center"> Editar </h2>
+            </div>
+            <div class="modal-body">
+            <input type="text" ng-model="post.title" class="form-control"> 
+            <input type="text" ng-model="post.link" class="form-control">
+            <input type="text" ng-model="post.genero" class="form-control">
+            </div>
+
+            <div class="modal-footer">
+        <button class="btn btn-danger" data-dismiss="modal" ng-click="save(post)"> Guardar</button>
+            </div>           
+ 
+ </div>
+    </div>
+  </div>
+</div>
+
+  <nav class="navbar navbar-default pull-right" ng-controller="NavCtrl">
+    <ul class="nav navbar-nav">
+      <li ng-show="isLogged()"><a>{{ usuario() }}</a></li>
+      <li ng-show="isLogged()"><a href="" ng-click="logOut()">Cerrar sesión</a></li>
+      <li ng-hide="isLogged()"><a href="/#/login">Iniciar sesión</a></li>
+      <li ng-hide="isLogged()"><a href="/#/register">Registro</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+    <ui-view></ui-view>
+    
+      <script type="text/ng-template" id="/home.html">
+    	<div ng-hide="isLogged()">
+  <div class="text-center">
+  <h3> <a href="/#/login">Accede</a> a tu cuenta o <a href="/#/register">registrate</a> para añadir más libros.</h3>
+  </div>
+</div>
+      <div class="page-header">
+        <h1 class="text-center" ng-show="isLogged()"> <span class="glyphicon glyphicon-book"></span> Libros </h1>
+        <h1 class="text-center" ng-hide="isLogged()"><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> Rank</h1>
+      </div>
+      <span>
+</span>
+
+ <form ng-submit="addPost()" class="col-md-6 col-md-offset-3" ng-show="isLogged()" style="margin-bottom:50px;">
+        <h2 class="text-center"> <span class="glyphicon glyphicon-edit"> </span> Agregar nuevo libro </h2>
+
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Nombre" ng-model="title"></input>
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Autor" ng-model="link"></input>
+        </div>
+         <div class="form-group">
+          <input type="text" class="form-control" placeholder="Género" ng-model="genero"></input>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block">Post</button>
+      
+      </form>
+
+<input class="form-control row" placeholder="Buscar..." ng-model="searchText" style="margin-bottom: 20px;">
+
+      <div ng-repeat="post in posts | filter:searchText | orderBy:'-upvotes'">
+      
+          <p class="text-center">
+          <h2> 
+            <span class="glyphicon glyphicon-thumbs-up"
+          ng-click="incrementUpvotes(post)" ng-hide="isLogged()"></span>
+          <span class="glyphicon glyphicon-thumbs-up" ng-show="isLogged()"></span>
+        {{post.upvotes}}
+            {{post.title}} </h2>
+            <div ng-if="!showB">
+            Autor: {{post.link}} -
+            Genero: {{post.genero}}</div>
+            
+        
+            <button class="btn btn-default btn-xs" data-toggle="modal" data-target="#modalsave" ng-show="isLogged()" ng-click="editPost(post)"> Editar </button>
+            <button class="btn btn-danger btn-xs" ng-click ="deletePost(post)" ng-show="isLogged()"> Eliminar</button> 
+          </p>
+          <span ng-hide="post.link">
+            {{post.title}}
+          </span>
+        </span>
+      </div>
+
+    
+     
+</script>
+
+
+<script type="text/ng-template" id="/register.html">
+  <div class="page-header">
+    <h1>Rank</h1>
+  </div>
+
+  <div ng-show="error" class="alert alert-danger row">
+    <span>{{ error.message }}</span>
+  </div>
+
+  <form ng-submit="register()"
+    style="margin-top:30px;">
+    <h3>Register</h3>
+
+    <div class="form-group">
+      <input type="text"
+      class="form-control"
+      placeholder="Username"
+      ng-model="user.username"></input>
+    </div>
+    <div class="form-group">
+      <input type="password"
+      class="form-control"
+      placeholder="Password"
+      ng-model="user.password"></input>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+</script>
+
+<script type="text/ng-template" id="/login.html">
+  <div class="page-header col-md-8 col-md-offset-2">
+    <h1 class="text-center">Iniciar sesión</h1>
+  </div>
+<div class="col-md-4 col-md-offset-4">
+  <div ng-show="error" class="alert alert-danger row">
+    <span>{{ error.message }}</span>
+  </div>
+
+  <form ng-submit="logIn()">
+
+    <div class="form-group">
+	<input type="text" class="form-control" placeholder="Usuario" ng-model="user.username"></input>
+    </div>
+    <div class="form-group"> 
+    <input type="password" class="form-control" placeholder="Contraseña" ng-model="user.password"></input>
+    </div>
+    <button type="submit" class="btn btn-success btn-block">ir</button>
+  </form>
+  </div>
+</script>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.js"
+  integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA="
+  crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
